@@ -1,18 +1,15 @@
 fixed:
   type: ksqldb
 prompts:
-  host:
-    hint: "your host name"
+  server:
+    hint: "ksqlDB server name"
   port:
-    default: 5432
+    default: 8088
     type: "int"
-  user:
-    hint: "dev username"
-  password:
-    hint: "dev password"
-    hide_input: true
-  dbname:
-    hint: "default database"
+  api_key:
+    hint: "API key"
+  api_secret:
+    hint: "API secret"
   threads:
     hint: "1 or more"
     type: "int"

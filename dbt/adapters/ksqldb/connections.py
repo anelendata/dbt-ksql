@@ -1,11 +1,18 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
+from typing import Optional, Any, Dict, Tuple, List
+
 import dbt.exceptions # noqa
 from dbt.adapters.base import Credentials
-
 from dbt.adapters.base import BaseConnectionManager as connection_cls
+from dbt.clients import agate_helper
+from dbt.contracts.connection import AdapterResponse
+from dbt.events import AdapterLogger
 
-from dbt.logger import GLOBAL_LOGGER as logger
+from ksql import KSQLAPI
+
+logger = AdapterLogger("ksqlDB")
+
 
 @dataclass
 class ksqlDBCredentials(Credentials):
@@ -15,15 +22,14 @@ class ksqlDBCredentials(Credentials):
     """
 
     # Add credentials members here, like:
-    # host: str
-    # port: int
-    # username: str
-    # password: str
+    server: str
+    api_key: str
+    api_secret: str
+    port: Optional[int] = 8088
 
     _ALIASES = {
-        "dbname":"database",
-        "pass":"password",
-        "user":"username"
+        "key":"api_key",
+        "secret":"api_secret"
     }
 
     @property
@@ -37,13 +43,14 @@ class ksqlDBCredentials(Credentials):
         Hashed and included in anonymous telemetry to track adapter adoption.
         Pick a field that can uniquely identify one team/organization building with this adapter
         """
-        return self.host
+        return self.server
 
     def _connection_keys(self):
         """
         List of keys to display in the `dbt debug` output.
         """
-        return ("host","port","username","user")
+        return ("server","port","api_key","api_secret", "database", "schema")
+
 
 class ksqlDBConnectionManager(connection_cls):
     TYPE = "ksqldb"
@@ -68,7 +75,18 @@ class ksqlDBConnectionManager(connection_cls):
         #     logger.debug("Rolling back transaction.")
         #     self.release(connection_name)
         #     raise dbt.exceptions.RuntimeException(str(exc))
-        pass
+        try:
+            yield
+        except Exception as e:
+            raise
+
+    @classmethod
+    def get_ksql_client(cls, profile_credentials):
+        ksql_server = f"{profile_credentials.server}:{profile_credentials.port}"
+        api_key = profile_credentials.api_key
+        api_secret = profile_credentials.api_secret
+        client = KSQLAPI(ksql_server, api_key=api_key, secret=api_secret)
+        return client
 
     @classmethod
     def open(cls, connection):
@@ -76,25 +94,25 @@ class ksqlDBConnectionManager(connection_cls):
         Receives a connection object and a Credentials object
         and moves it to the "open" state.
         """
-        # ## Example ##
-        # if connection.state == "open":
-        #     logger.debug("Connection is already open, skipping open.")
-        #     return connection
+        if connection.state == "open":
+            logger.debug("Connection is already open, skipping open.")
+            return connection
 
-        # credentials = connection.credentials
+        credentials = connection.credentials
 
-        # try:
-        #     handle = myadapter_library.connect(
-        #         host=credentials.host,
-        #         port=credentials.port,
-        #         username=credentials.username,
-        #         password=credentials.password,
-        #         catalog=credentials.database
-        #     )
-        #     connection.state = "open"
-        #     connection.handle = handle
-        # return connection
-        pass
+        try:
+            handle = cls.get_ksql_client(connection.credentials)
+            connection.state = "open"
+            connection.handle = handle
+        except Exception as e:
+            logger.debug(
+                "Got an error when attempting to create a bigquery " "client: '{}'".format(e)
+            )
+            connection.handle = None
+            connection.state = "fail"
+            raise Exception(str(e))
+
+        return connection
 
     @classmethod
     def get_response(cls,cursor):
@@ -120,3 +138,26 @@ class ksqlDBConnectionManager(connection_cls):
         # res = cursor.fetchone()
         # logger.debug("Canceled query "{}": {}".format(connection_name, res))
         pass
+
+    def begin(self):
+        pass
+
+    def cancel_open(self):
+        pass
+
+    def commit(self):
+        pass
+
+    def execute(self, sql, auto_begin=False, fetch=None) -> Tuple[str, str]:
+        conn = self.get_thread_connection()
+        client = conn.handle
+        stream_properties = {"ksql.streams.auto.offset.reset": "latest"}
+        res = client.ksql(sql, stream_properties)
+
+        response = AdapterResponse(  # type: ignore[call-arg]
+            _message=res,
+            rows_affected=0,
+            code="ksql",
+        )
+        table = agate_helper.empty_table()
+        return res, table

@@ -4,8 +4,9 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 */
 
 {% macro ksqldb__alter_column_type(relation,column_name,new_column_type) -%}
-'''Changes column name or data type'''
+    {{ return(adapter.empty()) }}
 /*
+    '''Changes column name or data type'''
     1. Create a new column (w/ temp name and correct type)
     2. Copy data over to it
     3. Drop the existing column (cascade!)
@@ -14,8 +15,9 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 {% endmacro %}
 
 {% macro ksqldb__check_schema_exists(information_schema,schema) -%}
-'''Checks if schema name exists and returns number or times it shows up.'''
+    {{ return(adapter.empty()) }}
 /*
+    '''Checks if schema name exists and returns number or times it shows up.'''
     1. Check if schemas exist
     2. return number of rows or columns that match searched parameter
 */
@@ -38,7 +40,10 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 */
 
 {% macro ksqldb__create_schema(relation) -%}
+    {{ return(adapter.empty()) }}
+/*
 '''Creates a new schema in the  target database, if schema already exists, method is a no-op. '''
+*/
 {% endmacro %}
 
 /*
@@ -55,16 +60,16 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 */
 
 {% macro ksqldb__drop_relation(relation) -%}
-'''Deletes relatonship identifer between tables.'''
-/*
+    {{ return(adapter.drop_relation(relation)) }}
+/* '''Deletes relatonship identifer between tables.'''
   1. If database exists
   2. Create a new schema if passed schema does not exist already
 */
 {% endmacro %}
 
 {% macro ksqldb__drop_schema(relation) -%}
-'''drops a schema in a target database.'''
-/*
+    {{ return(adapter.empty()) }}
+/* '''drops a schema in a target database.'''
   1. If database exists
   2. search all calls of schema, and change include value to False, cascade it to backtrack
 */
@@ -95,8 +100,8 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 
 
 {% macro ksqldb__get_columns_in_relation(relation) -%}
-'''Returns a list of Columns in a table.'''
-/*
+    {{ return(adapter.empty()) }}
+/* '''Returns a list of Columns in a table.'''
   1. select as many values from column as needed
   2. search relations to columns
   3. where table name is equal to the relation identifier
@@ -135,11 +140,14 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 */
 
 {% macro ksqldb__list_relations_without_caching(schema_relation) -%}
+    {{ return(adapter.list_relations_without_caching(schema_relation)) }}
+/*
 '''creates a table of relations withough using local caching.'''
+*/
 {% endmacro %}
 
 {% macro ksqldb__list_schemas(database) -%}
-'''Returns a table of unique schemas.'''
+    {{ return(adapter.list_schemas(database)) }}
 /*
   1. search schemea by specific name
   2. create a table with names
@@ -147,16 +155,16 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 {% endmacro %}
 
 {% macro ksqldb__rename_relation(from_relation, to_relation) -%}
-'''Renames a relation in the database.'''
-/*
+    {{ return(adapter.empty()) }}
+/* '''Renames a relation in the database.'''
   1. Search for a specific relation name
   2. alter table by targeting specific name and passing in new name
 */
 {% endmacro %}
 
 {% macro ksqldb__truncate_relation(relation) -%}
-'''Removes all rows from a targeted set of tables.'''
-/*
+    {{ return(adapter.empty()) }}
+/* '''Removes all rows from a targeted set of tables.'''
   1. grab all tables tied to the relation
   2. remove rows from relations
 */
@@ -173,6 +181,16 @@ Example 3 of 3 of required macros that does not have a default implementation.
 */
 
 {% macro ksqldb__current_timestamp() -%}
-'''Returns current UTC time'''
-{# docs show not to be implemented currently. #}
+    UNIX_TIMESTAMP()
+/* '''Returns current UTC time'''
+  {# docs show not to be implemented currently. #} */
 {% endmacro %}
+
+
+{% macro drop_stream(relation, delete_topic=false) -%}
+{% set query %}
+drop stream {{ relation }} delete topic
+{% endset %}
+{% do run_query(query) %}
+{%- endmacro %}
+
