@@ -1,15 +1,28 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Type
 
 from itertools import chain, islice
 
 from dbt.adapters.base.relation import BaseRelation, ComponentName, InformationSchema
+from dbt.dataclass_schema import StrEnum
 from dbt.exceptions import raise_compiler_error
-from dbt.utils import filter_null_values
+from dbt.utils import classproperty, filter_null_values
 from typing import TypeVar
 
 
 Self = TypeVar("Self", bound="ksqlDBRelation")
+
+
+class ksqlDBRelationType(StrEnum):
+    # Built-in materialization types.
+    Table = "table"
+    View = "view"
+    CTE = "cte"
+    External = "external"
+
+    # ksqldb-specific materialization types.
+    # Source = "source"
+    Stream = "stream"
 
 
 @dataclass(frozen=True, eq=False, repr=False)
@@ -17,6 +30,12 @@ class ksqlDBRelation(BaseRelation):
     quote_character: str = ""
     location: Optional[str] = None
     ns_delimit: Optional[str] = "_"
+
+    type: Optional[ksqlDBRelationType] = None
+
+    @classproperty
+    def get_relation_type(cls) -> Type[ksqlDBRelationType]:
+        return ksqlDBRelationType
 
     def render(self):
         dl = self.ns_delimit
