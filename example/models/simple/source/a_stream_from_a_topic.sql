@@ -1,3 +1,5 @@
+/* Creating a stream directly from a Kafka topic
+*/
 (
       id string key,
       time bigint,

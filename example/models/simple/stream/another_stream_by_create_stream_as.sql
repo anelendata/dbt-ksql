@@ -1,6 +1,6 @@
 /*
 The kafka_topic will be set as {{ this.database }}.{{ this.schema }}.{{ this.name }}
-unless listed in with(kafka_topic="...") paramter.
+unless specified in with(kafka_topic="...") paramter.
 */
 {{ with(
     timestamp='time',

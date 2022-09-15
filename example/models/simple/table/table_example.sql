@@ -1,3 +1,9 @@
+/*
+dbt-ksql will try to create ksql Table when materialized parameter is set as "table"
+
+Again, the kafka_topic will be set as {{ this.database }}.{{ this.schema }}.{{ this.name }}
+unless specified in with(kafka_topic="...") paramter.
+*/
 {{ config(materialized='table') }}
 
 {{ with(
