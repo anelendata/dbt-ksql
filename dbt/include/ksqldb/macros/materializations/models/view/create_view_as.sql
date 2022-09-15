@@ -16,7 +16,7 @@
   {%- set sql_header = config.get('sql_header', none) -%}
 
   {{ sql_header if sql_header is not none }}
-  create or replace stream {{ relation }}
+  create or replace stream {{ relation.include(database=False) }}
     {{ sql }}
   ;
 {%- endmacro %}

@@ -55,7 +55,6 @@ class ksqlDBCredentials(Credentials):
 class ksqlDBConnectionManager(connection_cls):
     TYPE = "ksqldb"
 
-
     @contextmanager
     def exception_handler(self, sql: str):
         """

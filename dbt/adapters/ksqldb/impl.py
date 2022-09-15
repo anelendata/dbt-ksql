@@ -41,7 +41,7 @@ class ksqlDBAdapter(adapter_cls):
 
     @available
     def list_schemas(self, database: str) -> List[str]:
-        return ["."]
+        return []
 
     def convert_boolean_type(self):
         return "boolean"
@@ -64,12 +64,16 @@ class ksqlDBAdapter(adapter_cls):
         return "time"
 
     def create_schema(self, relation):
-        return
-        raise dbt.exceptions.NotImplementedException(
-            f"`create_schema({relation})` is not implemented for this adapter!"
-        )
+        pass
+        # raise dbt.exceptions.NotImplementedException(
+        #     f"`create_schema({relation})` is not implemented for this adapter!"
+        # )
 
     def drop_relation(self, relation):
+        raise dbt.exceptions.NotImplementedException(
+            f"`drop_relation({relation})` is not implemented for this adapter!"
+        )
+
         is_cached = self._schema_is_cached(relation.database, relation.schema)  # type: ignore[arg-type]
         if is_cached:
             self.cache_dropped(relation)
@@ -83,33 +87,15 @@ class ksqlDBAdapter(adapter_cls):
         except Exception as e:
             logger.warning(e)
 
-    def drop_stream(self, relation, delete_topic=False):
-        conn = self.connections.get_thread_connection()
-
-        # ref = self.get_table_ref_from_relation(relation)
-        logger.info(f"Dropping {relation}")
-        ref = relation
-        query = f"DROP STREAM {ref}"
-        if delete_topic:
-            query += "DELETE TOPIC"
-        query += ";"
-
-        try:
-            conn.handle.ksql(query)
-        except Exception as e:
-            logger.warning(e)
-
     def drop_schema(self):
         raise dbt.exceptions.NotImplementedException(
             "`drop_schema` is not implemented for this adapter!"
         )
 
-
     def expand_column_types(self):
         raise dbt.exceptions.NotImplementedException(
             "`expand_column_types` is not implemented for this adapter!"
         )
-
 
     def get_columns_in_relation(self):
         raise dbt.exceptions.NotImplementedException(
@@ -117,10 +103,7 @@ class ksqlDBAdapter(adapter_cls):
         )
 
     def list_relations_without_caching(self, schema_relation):
-        t = ksqlDBRelation.create(
-            database="test", schema="hello", identifier="", quote_policy={}, type=ksqlDBRelation.Table
-        )
-        return [t,]
+        return []
 
     def quote(self):
         return '"'

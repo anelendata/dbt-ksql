@@ -16,15 +16,23 @@ Self = TypeVar("Self", bound="ksqlDBRelation")
 class ksqlDBRelation(BaseRelation):
     quote_character: str = ""
     location: Optional[str] = None
+    ns_delimit: Optional[str] = "_"
 
     def render(self):
-        # TODO: Find where to set this
-        self.include_policy.database = False
+        dl = self.ns_delimit
+        path = list()
+        if self.include_policy.database and self.database:
+            path.append(self.database)
+        if self.include_policy.schema and self.schema:
+            path.append(self.schema)
+        if self.name:
+            path.append(self.name)
 
-        database = self.database if self.include_policy.database else ""
-        schema = self.schema if self.include_policy.schema else ""
-        name = self.name
-        return f"{database}{schema}{name}"
+        try:
+            ret = dl.join(path)
+        except Exception as e:
+            raise Exception(str(path))
+        return ret
 
     def matches(
         self,
