@@ -53,7 +53,7 @@ dbt --version
 ```
 
 Something like this:
-``
+```
 Core:
   - installed: 1.1.2
   - latest:    1.2.1 - Update available!
