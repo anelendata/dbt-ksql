@@ -29,7 +29,7 @@ class ksqlDBRelationType(StrEnum):
 class ksqlDBRelation(BaseRelation):
     quote_character: str = ""
     location: Optional[str] = None
-    ns_delimit: Optional[str] = "_"
+    ns_delimit: Optional[str] = "."
 
     type: Optional[ksqlDBRelationType] = None
 

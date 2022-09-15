@@ -1,0 +1,25 @@
+# Note that only one of these targets is required
+
+default:
+  target: dev
+  outputs:
+    dev:
+      port: 8088
+      api_key: XXXX
+      api_secret: YYYY
+      type: ksqldb
+      database: "ksql-local"  # This will just serve as a prefix
+      schema: "my_dev"        # This will just serve as another prefix
+      server: "http://localhost"
+
+prod:
+  target: prod
+  outputs:
+    prod:
+      port: 443
+      api_key: XXXX
+      api_secret: YYYY
+      type: ksqldb
+      database: ""  # You can keep it blank
+      schema: ""    # You can keep it blank
+      server: "https://xxxx.us-east-2.aws.confluent.cloud"
