@@ -1,4 +1,4 @@
-{% macro stream_param(
+{% macro create_param(
     timestamp=None,
     partitions=None,
     replicas=None,
@@ -16,3 +16,18 @@ with (
     kafka_topic='{% if kafka_topic %}{{ kafka_topic }}{% else %}{{ this.include(database=True) }}{% endif %}'
 )
 {% endmacro %}
+
+{% macro drop_stream(relation, delete_topic=false) -%}
+{% set query %}
+drop stream {{ relation }} delete topic
+{% endset %}
+{% do run_query(query) %}
+{%- endmacro %}
+
+{% macro drop_table(relation, delete_topic=false) -%}
+{% set query %}
+drop table {{ relation }} delete topic
+{% endset %}
+{% do run_query(query) %}
+{%- endmacro %}
+

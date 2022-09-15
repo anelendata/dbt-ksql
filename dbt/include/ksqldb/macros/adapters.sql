@@ -186,11 +186,3 @@ Example 3 of 3 of required macros that does not have a default implementation.
   {# docs show not to be implemented currently. #} */
 {% endmacro %}
 
-
-{% macro drop_stream(relation, delete_topic=false) -%}
-{% set query %}
-drop stream {{ relation }} delete topic
-{% endset %}
-{% do run_query(query) %}
-{%- endmacro %}
-
