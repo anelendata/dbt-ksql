@@ -140,7 +140,10 @@ dbt docs: https://docs.getdbt.com/docs/contributing/building-a-new-adapter
 */
 
 {% macro ksqldb__list_relations_without_caching(schema_relation) -%}
-    {{ return(adapter.list_relations_without_caching(schema_relation)) }}
+{% call statement('list_relations_without_caching', fetch_result=True) -%}
+    SHOW STREAMS
+{% endcall %}
+{{ return(load_result('list_relations_without_caching')) }}
 /*
 '''creates a table of relations withough using local caching.'''
 */

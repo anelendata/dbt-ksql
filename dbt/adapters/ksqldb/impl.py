@@ -13,6 +13,7 @@ from dbt.adapters.ksqldb.relation import ksqlDBRelation
 # from dbt.adapters.ksqldb import ksqlDBColumn
 # from dbt.adapters.ksqldb import ksqlDBConnectionManager
 from dbt.adapters.ksqldb import ksqlDBConnectionManager
+from dbt.adapters.sql.impl import LIST_RELATIONS_MACRO_NAME
 from dbt.logger import GLOBAL_LOGGER as logger
 
 
@@ -103,7 +104,33 @@ class ksqlDBAdapter(adapter_cls):
         )
 
     def list_relations_without_caching(self, schema_relation):
-        return []
+        kwargs = {"schema_relation": schema_relation}
+        results = self.execute_macro(LIST_RELATIONS_MACRO_NAME, kwargs=kwargs)
+
+        relations = []
+        quote_policy = {"database": True, "schema": True, "identifier": True}
+
+        streams = results.response[0]["streams"]
+
+        for stream in streams:
+            _database = ""
+            _schema = ""
+            _type = stream["type"]
+            _identifier = stream["name"]
+            try:
+                _type = self.Relation.get_relation_type(_type.lower())
+            except ValueError:
+                _type = self.Relation.get_relation_type.Stream
+            relations.append(
+                self.Relation.create(
+                    database=_database,
+                    schema=_schema,
+                    identifier=_identifier,
+                    quote_policy=quote_policy,
+                    type=_type,
+                )
+            )
+        return relations
 
     def quote(self):
         return '"'
