@@ -9,11 +9,14 @@ dbt-ksql helps to modularize the code, manage the model dependency, and facilita
 
 This project is in a proof-of-concept phase.
 
-We are trying to use dbt to manage ksqlDB by
+We are using part of dbt features to manage ksqlDB by
 - Separating production/staging/development environments through dbt's profile and target.
 - Modularize the SQL with dbt's variable, reference, macro, etc.
 
-### Materialization type
+Not all dbt features are supported. ksqlDB transforms streaming data. Some of
+dbt features are assuming batch operation (e.g. incremental and snapshot).
+
+### Materialization types
 
 Supported:
 - stream
