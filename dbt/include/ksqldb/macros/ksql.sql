@@ -19,14 +19,22 @@ with (
 
 {% macro drop_stream(relation, delete_topic=false) -%}
 {% set query %}
+{% if delete_topic %}
 drop stream {{ relation }} delete topic
+{% else %}
+drop stream {{ relation }}
+{% endif %}
 {% endset %}
 {% do run_query(query) %}
 {%- endmacro %}
 
 {% macro drop_table(relation, delete_topic=false) -%}
 {% set query %}
+{% if delete_topic %}
 drop table {{ relation }} delete topic
+{% else %}
+drop table {{ relation }}
+{% endif %}
 {% endset %}
 {% do run_query(query) %}
 {%- endmacro %}
