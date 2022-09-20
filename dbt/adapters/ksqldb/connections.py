@@ -25,6 +25,7 @@ class ksqlDBCredentials(Credentials):
     server: str
     api_key: str
     api_secret: str
+    cluster: Optional[str]
     port: Optional[int] = 8088
 
     _ALIASES = {
@@ -49,7 +50,7 @@ class ksqlDBCredentials(Credentials):
         """
         List of keys to display in the `dbt debug` output.
         """
-        return ("server","port","api_key","api_secret", "database", "schema")
+        return ("server","port","api_key","api_secret", "database", "schema", "cluster")
 
 
 class ksqlDBConnectionManager(connection_cls):

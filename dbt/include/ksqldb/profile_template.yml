@@ -10,6 +10,8 @@ prompts:
     hint: "API key"
   api_secret:
     hint: "API secret"
+  cluster:
+    hint: "Place to note ksqlDB cluster ID"
   threads:
     hint: "1 or more"
     type: "int"
